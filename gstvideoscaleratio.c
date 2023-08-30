@@ -23,6 +23,7 @@ enum
   PROP_0,
   PROP_WIDTH,
   PROP_HEIGHT,
+  PROP_RATIO,
 };
 
 static void
@@ -38,6 +39,10 @@ gst_videoscaleratio_set_property (GObject * object, guint prop_id,
 
     case PROP_HEIGHT:
       filter->height = g_value_get_int (value);
+      break;
+
+    case PROP_RATIO:
+      filter->ratio = g_value_get_float (value);
       break;
 
     default:
@@ -62,6 +67,10 @@ gst_videoscaleratio_class_init (GstVideoScaleRatioClass * klass)
       g_param_spec_int ("height", "Height", "The height of the output frame",
           0, 99999, 0, G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS));
 
+  g_object_class_install_property (object_class, PROP_RATIO,
+      g_param_spec_float ("ratio", "Ratio", "The ratio to scale",
+          0, 1, 1, G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS));
+
   gst_element_class_add_pad_template (element_class,
       gst_static_pad_template_get (&sink_factory));
 
@@ -84,12 +93,14 @@ gst_videoscaleratio_sink_event (GstPad * pad, GstObject * parent,
     if (filter->height > 0) {
       info.width = info.width * filter->height / info.height;
       info.height = filter->height;
-
     } else if (filter->width > 0) {
       info.height = info.height * filter->width / info.width;
       info.width = filter->width;
+    } else if (filter->ratio > 0 && filter->ratio < 1) {
+      info.width = info.width * filter->ratio;
+      info.height = info.height * filter->ratio;
     }
-
+    
     if ((info.width % 2) != 0) {
       info.width++;
     }
