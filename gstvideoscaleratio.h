@@ -20,6 +20,7 @@ G_BEGIN_DECLS
   /* properties */
   gint width;
   gint height;
+  gfloat ratio;
 
   GstPad *sinkpad, *srcpad;
   GstElement *videoscale;
